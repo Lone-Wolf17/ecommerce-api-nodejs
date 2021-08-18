@@ -13,6 +13,7 @@ router.get('/', async (req, res) => {
         }
         res.status(200).send(categoryList);
     } catch (err) {
+        console.error(err);
         res.status(500).json({
             error: err,
             success: false
