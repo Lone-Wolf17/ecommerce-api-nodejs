@@ -7,7 +7,7 @@ const Category = require("../models/Category.js");
 // @route       Get api/v1/products
 router.get("/", async (req, res) => {
   try {
-    const productList = await Product.find();
+    const productList = await Product.find().select("name image brand");
 
     res.status(200).send(productList);
   } catch (err) {
@@ -67,6 +67,24 @@ router.post("/", async (req, res) => {
   }
 });
 
+// @desc        Retrieve product with id
+// @route       Get api/v1/products/:id
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
 
+    if (!product)
+      return res
+        .status(404)
+        .json({ success: false, message: "Product with Id not found" });
+
+    res.status(200).send(product);
+  } catch (err) {
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+  }
+});
 
 module.exports = router;
