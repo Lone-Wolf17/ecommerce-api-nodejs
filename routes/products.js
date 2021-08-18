@@ -71,7 +71,7 @@ router.post("/", async (req, res) => {
 // @route       Get api/v1/products/:id
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate("category");
 
     if (!product)
       return res
