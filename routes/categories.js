@@ -148,4 +148,23 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// @desc        Get Count of Categories in DB
+// @route       Get api/v1/categories/get/count
+router.get("/get/count", async (req, res) => {
+  try {
+    const categoryCount = await Category.countDocuments((count) => count);
+
+    if (!categoryCount) return res.status(400).json({ success: false });
+
+    res.status(200).send({
+      categoryCount: categoryCount,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+  }
+});
+
 module.exports = router;
