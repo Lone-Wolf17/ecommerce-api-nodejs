@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product.js");
 const Category = require("../models/Category.js");
+const mongoose = require("mongoose");
 
 // @desc        Retrieve all Products
 // @route       Get api/v1/products
@@ -46,12 +47,6 @@ router.post("/", async (req, res) => {
       isFeatured: req.body.isFeatured,
     });
 
-    console.log("Point C");
-
-    // newProduct = await newProduct.save();
-
-    // console.log("Point C");
-
     if (!newProduct)
       return res.status(404).json({
         success: false,
@@ -71,6 +66,14 @@ router.post("/", async (req, res) => {
 // @route       Get api/v1/products/:id
 router.get("/:id", async (req, res) => {
   try {
+    /// Validates that Category Exists
+    const category = await Category.findById(req.body.category);
+    if (!category)
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Category",
+      });
+
     const product = await Product.findById(req.params.id).populate("category");
 
     if (!product)
@@ -84,6 +87,107 @@ router.get("/:id", async (req, res) => {
       error: err,
       success: false,
     });
+  }
+});
+
+// @desc        Update a Product
+// @route       Put api/v1/products/:id
+router.put("/:id", async (req, res) => {
+  try {
+    /// Checks if id is a valid Object ID
+    if (!mongoose.isValidObjectId(req.params.id))
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Product ID",
+      });
+
+    /// Checks if prodduect exists in DB
+    const product = await Product.findById(req.params.id);
+    if (!product)
+      return res.status(400).json({
+        success: false,
+        message: "Product to be Updated was not found in Database",
+      });
+
+    const category = await Category.findById(req.body.category);
+    if (!category)
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Category",
+      });
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        name: req.body.name,
+        description: req.body.description,
+        richDescription: req.body.richDescription,
+        image: req.body.image,
+        brand: req.body.brand,
+        price: req.body.price,
+        category: req.body.category,
+        countInStock: req.body.countInStock,
+        rating: req.body.rating,
+        numReviews: req.body.numReviews,
+        isFeatured: req.body.isFeatured,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedProduct) {
+      res
+        .status(404)
+        .json({ success: false, message: "Product Could not be Updated!!!" });
+    }
+    res.status(200).send(updatedProduct);
+  } catch (err) {
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+  }
+});
+
+// @desc        Delete a Product
+// @route       Delete api/v1/products/:id
+router.delete("/:id", async (req, res) => {
+  try {
+    /// Checks if id is a valid Object ID
+    if (!mongoose.isValidObjectId(req.params.id))
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Product ID",
+      });
+
+    /// Checks if prodduect exists in DB
+    const product = await Product.findById(req.params.id);
+    if (!product)
+      return res.status(400).json({
+        success: false,
+        message: "Product to be Deleted was not found in Database",
+      });
+
+    const result = await Product.findByIdAndRemove(req.params.id);
+
+    if (!result)
+      return res.status(404).json({
+        message: "Product not Found",
+        success: false,
+      });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "The Product was deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+
+    next(err);
   }
 });
 
