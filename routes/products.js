@@ -200,7 +200,27 @@ router.get("/get/count", async (req, res) => {
     if (!productCount) return res.status(400).json({ success: false });
 
     res.status(200).send({
-      productCount: productCount
+      productCount: productCount,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+  }
+});
+
+// @desc        Get Featured Products
+// @route       Get api/v1/products/get/featured
+router.get("/get/featured/:count", async (req, res) => {
+  try {
+    const count = req.params.count ? req.params.count : 0;
+    const products = await Product.find({ isFeatured: true }).limit(+count);
+
+    if (!products) return res.status(400).json({ success: false });
+
+    res.status(200).send({
+      productCount: products,
     });
   } catch (err) {
     res.status(500).json({
