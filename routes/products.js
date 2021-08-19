@@ -8,7 +8,14 @@ const mongoose = require("mongoose");
 // @route       Get api/v1/products
 router.get("/", async (req, res) => {
   try {
-    const productList = await Product.find().select("name image brand");
+    let filter = {};
+    if (req.query.categories) {
+      filter = { category: req.query.categories.split(",") };
+    }
+
+    const productList = await Product.find(filter).select(
+      "name image brand category"
+    );
 
     res.status(200).send(productList);
   } catch (err) {
