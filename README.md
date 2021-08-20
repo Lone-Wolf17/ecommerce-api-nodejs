@@ -6,3 +6,4 @@ Ensure to Pass in the necessary Environmental variables Or create a config.env f
 
 PORT
 MONGO_URI
+JWT_SECRET
