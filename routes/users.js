@@ -9,7 +9,6 @@ const salt = bcrypt.genSaltSync(7);
 
 router.get("/", async (req, res) => {
   try {
-    console.log("Point B");
     const userList = await User.find().select("-passwordHash");
 
     if (!userList) {
