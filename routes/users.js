@@ -9,6 +9,7 @@ const salt = bcrypt.genSaltSync(7);
 
 router.get("/", async (req, res) => {
   try {
+    console.log("Point B");
     const userList = await User.find().select("-passwordHash");
 
     if (!userList) {
@@ -92,7 +93,6 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     const secret = process.env.JWT_SECRET;
-    
 
     if (!user) {
       return res.status(400).json({
@@ -107,7 +107,7 @@ router.post("/login", async (req, res) => {
           userId: user.id,
         },
         secret,
-        {expiresIn: '1d'}
+        { expiresIn: "1d" }
       );
 
       return res.status(200).send({ user: user.email, token: token });
