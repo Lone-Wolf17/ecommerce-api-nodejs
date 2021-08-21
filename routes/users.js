@@ -104,6 +104,7 @@ router.post("/login", async (req, res) => {
       const token = jwt.sign(
         {
           userId: user.id,
+          isAdmin: user.isAdmin
         },
         secret,
         { expiresIn: "1d" }
@@ -124,6 +125,8 @@ router.post("/login", async (req, res) => {
 
 // @desc        register a User
 // @route       Post api/v1/users/register
+/// This is technically a twin to POST api/v1/users/
+/// This is for regular users, that one is expected to be used by Admins Panel
 router.post("/register", async (req, res) => {
   try {
     const user = await User.create({
