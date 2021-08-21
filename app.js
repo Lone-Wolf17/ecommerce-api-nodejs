@@ -15,7 +15,7 @@ const errorHandler = require("./helpers/error-handler.js");
 const app = express();
 app.use(cors());
 app.options("*", cors());
-const api = process.env.API_URL;
+const api = process.env.API_BASE_URL;
 
 // Middleware
 app.use(express.urlencoded({ extended: false })); // body parser

@@ -121,4 +121,41 @@ router.post("/login", async (req, res) => {
   }
 });
 
+
+// @desc        register a User
+// @route       Post api/v1/users/register
+router.post("/register", async (req, res) => {
+  try {
+    const user = await User.create({
+      name: req.body.name,
+      email: req.body.email,
+      passwordHash: bcrypt.hashSync(req.body.password, salt),
+      phone: req.body.phone,
+      isAdmin: req.body.isAdmin,
+      apartment: req.body.apartment,
+      street: req.body.street,
+      zip: req.body.zip,
+      city: req.body.city,
+      country: req.body.country,
+    });
+
+    // user = await user.save();
+
+    if (!user)
+      return res.status(404).json({
+        message: "The User Could not be created",
+        success: false,
+      });
+
+    res.status(200).send(user);
+  } catch (err) {
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+  }
+});
+
+
+
 module.exports = router;
