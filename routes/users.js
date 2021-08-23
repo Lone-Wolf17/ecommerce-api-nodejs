@@ -159,6 +159,66 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// @desc        Get Count of User in DB
+// @route       Get api/v1/users/get/count
+router.get("/get/count", async (req, res) => {
+  try {
+    const userCount = await User.countDocuments((count) => count);
+
+    if (!userCount) return res.status(400).json({ success: false });
+
+    res.status(200).send({
+      userCount: userCount,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+  }
+});
+
+// @desc        Delete a User
+// @route       Delete api/v1/user/:id
+router.delete("/:id", async (req, res) => {
+  try {
+    /// Checks if id is a valid Object ID
+    if (!mongoose.isValidObjectId(req.params.id))
+      return res.status(400).json({
+        success: false,
+        message: "Invalid User ID",
+      });
+
+    /// Checks if prodduect exists in DB
+    const user = await User.findById(req.params.id);
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        message: "User to be Deleted was not found in Database",
+      });
+
+    // This is the line that does the deleting from DB
+    const result = await User.findByIdAndRemove(req.params.id);
+
+    if (!result)
+      return res.status(404).json({
+        message: "User not Found in DB",
+        success: false,
+      });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "The User was deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+
+    next(err);
+  }
+});
 
 
 module.exports = router;
