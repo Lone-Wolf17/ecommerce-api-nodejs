@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { OrderItemModelName, UserModelName } = require("../constants/modelNames");
+const { OrderModelName, OrderItemModelName, UserModelName } = require("../constants/modelNames");
 
 const OrderSchema = new mongoose.Schema({
   orderItems: [
@@ -58,4 +58,4 @@ OrderSchema.set("toJSON", {
   virtuals: true,
 });
 
-module.exports = mongoose.model(OrderItemModelName, OrderSchema);
+module.exports = mongoose.model(OrderModelName, OrderSchema);

@@ -1,6 +1,6 @@
 module.exports = {
     CategoryModelName: "Category",
-    OrderCategoryModelName: "Order",
+    OrderModelName: "Order",
     OrderItemModelName: "OrderItem",
     ProductModelName: "Product",
     UserModelName: "User"
