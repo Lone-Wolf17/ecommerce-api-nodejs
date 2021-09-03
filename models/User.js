@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { UserModelName } = require("../constants/modelNames");
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -51,4 +52,4 @@ UserSchema.set("toJSON", {
   virtuals: true,
 });
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model(UserModelName, UserSchema);

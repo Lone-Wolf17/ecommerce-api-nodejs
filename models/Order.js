@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
+const { OrderItemModelName, UserModelName } = require("../constants/modelNames");
 
 const OrderSchema = new mongoose.Schema({
   orderItems: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "OrderItem",
+      ref: OrderItemModelName,
       required: true,
     },
   ],
@@ -41,7 +42,7 @@ const OrderSchema = new mongoose.Schema({
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: UserModelName,
   },
   dateOrdered: {
     type: Date,
@@ -57,4 +58,4 @@ OrderSchema.set("toJSON", {
   virtuals: true,
 });
 
-module.exports = mongoose.model("Order", OrderSchema);
+module.exports = mongoose.model(OrderItemModelName, OrderSchema);

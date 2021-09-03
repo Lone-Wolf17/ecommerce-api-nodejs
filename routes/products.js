@@ -30,15 +30,12 @@ router.get("/", async (req, res) => {
 // @route       Post api/v1/products
 router.post("/", async (req, res) => {
   try {
-    console.log("Point A");
     const category = await Category.findById(req.body.category);
     if (!category)
       return res.status(400).json({
         success: false,
         message: "Invalid Category",
       });
-
-    console.log("Point B");
 
     const newProduct = await Product.create({
       name: req.body.name,

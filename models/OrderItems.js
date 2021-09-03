@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
+const { ProductModelName, OrderItemModelName } = require('../constants/modelNames');
 
 const OrderItemSchema = new mongoose.Schema({
     product: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product'
+        ref: ProductModelName
     },
     quantity: {
         type: Number,
@@ -11,4 +12,4 @@ const OrderItemSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('OrderItem', OrderItemSchema);
+module.exports = mongoose.model(OrderItemModelName, OrderItemSchema);

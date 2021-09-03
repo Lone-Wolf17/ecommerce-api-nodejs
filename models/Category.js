@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { CategoryModelName } = require("../constants/modelNames");
 
 const CategorySchema = new mongoose.Schema({
   id: String,
@@ -11,4 +12,4 @@ const CategorySchema = new mongoose.Schema({
   image: String,
 });
 
-module.exports = mongoose.model("Category", CategorySchema);
+module.exports = mongoose.model(CategoryModelName, CategorySchema);

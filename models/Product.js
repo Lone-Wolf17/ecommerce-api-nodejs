@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { CategoryModelName, ProductModelName } = require("../constants/modelNames");
 
 const ProductSchema = new mongoose.Schema({
   name: {
@@ -29,7 +30,7 @@ const ProductSchema = new mongoose.Schema({
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
+    ref: CategoryModelName,
     required: true,
   },
   countInStock: {
@@ -60,4 +61,4 @@ ProductSchema.set('toJSON', {
   virtuals: true
 });
 
-module.exports = mongoose.model("Product", ProductSchema);
+module.exports = mongoose.model(ProductModelName, ProductSchema);
