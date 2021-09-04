@@ -189,4 +189,25 @@ router.get("/get/count", async (req, res) => {
   res.send({ orderCount: orderCount });
 });
 
+// @desc        Retrieve orders of a particular user
+// @route       GET api/v1/orders/get/userorders/:userid
+router.get("/get/userorders/:userId", async (req, res) => {
+  const userOrderList = await Order.find({ user: req.params.userId })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: "category",
+      },
+    })
+    .sort({ dateOrdered: -1 });
+
+  if (!userOrderList) {
+    res
+      .status(500)
+      .json({ success: false, message: "The Order Count cannot be generated" });
+  }
+  res.send(userOrderList);
+});
+
 module.exports = router;
