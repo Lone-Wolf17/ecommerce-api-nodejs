@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const Order = require("../models/Order.js");
 const OrderItem = require("../models/OrderItem.js");
+const Product = require("../models/Product.js");
 const router = express.Router();
 
 // @desc        Retrieve all Orders
@@ -20,18 +21,35 @@ router.get("/", async (req, res) => {
 // @desc        Create a new Order
 // @route       Post api/v1/order
 router.post("/", async (req, res) => {
+  let totalPrice = 0;
+
   const orderItemsIds = await Promise.all(
     req.body.orderItems.map(async (orderItem) => {
+      const product = await Product.findById(orderItem.product)
+        .select("price")
+        .lean();
+
+      if (!product) {
+        return res.status(400).json({
+          message: `The Product ${orderItem.product} not found in Database`,
+          success: false,  
+        });
+      }
+
       let newOrderItem = new OrderItem({
         quantity: orderItem.quantity,
         product: orderItem.product,
       });
 
+      totalPrice += orderItem.quantity * +product.price;
+    
       newOrderItem = await newOrderItem.save();
 
       return newOrderItem._id;
     })
   );
+
+  console.log(`Total Price:: ${totalPrice}`);
 
   let order = new Order({
     orderItems: orderItemsIds,
@@ -42,7 +60,7 @@ router.post("/", async (req, res) => {
     country: req.body.country,
     phone: req.body.phone,
     status: req.body.status,
-    totalPrice: req.body.totalPrice,
+    totalPrice: totalPrice,
     user: req.body.user,
   });
 
@@ -128,14 +146,13 @@ router.delete("/:id", async (req, res) => {
   const deletedOrder = await Order.findByIdAndRemove(req.params.id);
 
   if (deletedOrder) {
-
-    await deletedOrder.orderItems.map(async orderItem => {
+    await deletedOrder.orderItems.map(async (orderItem) => {
       await OrderItem.findByIdAndRemove(orderItem);
     });
 
     return res
-    .status(200)
-    .json({ success: true, message: "The Order was deleted" });
+      .status(200)
+      .json({ success: true, message: "The Order was deleted" });
   } else {
     return res.status(404).json({
       message: "Order not Found",
