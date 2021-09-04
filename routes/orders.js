@@ -32,7 +32,7 @@ router.post("/", async (req, res) => {
       if (!product) {
         return res.status(400).json({
           message: `The Product ${orderItem.product} not found in Database`,
-          success: false,  
+          success: false,
         });
       }
 
@@ -42,7 +42,7 @@ router.post("/", async (req, res) => {
       });
 
       totalPrice += orderItem.quantity * +product.price;
-    
+
       newOrderItem = await newOrderItem.save();
 
       return newOrderItem._id;
@@ -159,6 +159,34 @@ router.delete("/:id", async (req, res) => {
       success: false,
     });
   }
+});
+
+// @desc        Get Total Sales for EShop
+// @route       GET api/v1/orders/get/totalsales
+router.get("/get/totalsales", async (req, res) => {
+  const totalSales = await Order.aggregate([
+    { $group: { _id: null, totalsales: { $sum: "$totalPrice" } } },
+  ]);
+
+  if (!totalSales) {
+    res
+      .status(500)
+      .json({ success: false, message: "The Total Sales cannit be generated" });
+  }
+  res.send({ totalsales: totalSales.pop().totalsales });
+});
+
+// @desc        Retrieve the number of Orders in DB
+// @route       GET api/v1/orders/get/count
+router.get("/get/count", async (req, res) => {
+  const orderCount = await Order.countDocuments((count) => count);
+
+  if (!orderCount) {
+    res
+      .status(500)
+      .json({ success: false, message: "The Order Count cannot be generated" });
+  }
+  res.send({ orderCount: orderCount });
 });
 
 module.exports = router;
