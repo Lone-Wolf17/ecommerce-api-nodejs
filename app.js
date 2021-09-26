@@ -23,6 +23,7 @@ app.use(express.json()); // body parser
 app.use(morgan("tiny"));
 app.use(authJwt);
 app.use(errorHandler);
+app.use("/public/uploads", express.static(__dirname + "/public/uploads")); // static folder
 
 // Connect to Mongo DB
 connectDB();
