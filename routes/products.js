@@ -3,6 +3,31 @@ const router = express.Router();
 const Product = require("../models/Product.js");
 const Category = require("../models/Category.js");
 const mongoose = require("mongoose");
+const multer = require("multer");
+
+const FILE_TYPE_MAP = {
+  "image/png": "png",
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+};
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const isValid = FILE_TYPE_MAP[file.mimetype];
+    let uploadError = new Error("Invalid image type");
+
+    if (isValid) uploadError = null;
+
+    cb(uploadError, "public/uploads");
+  },
+  filename: function (req, file, cb) {
+    const filename = file.originalname.replace(" ", "-");
+    const extension = FILE_TYPE_MAP[file.mimetype];
+    cb(null, `${filename}-${Date.now()}.${extension}`);
+  },
+});
+
+const uploadOptions = multer({ storage: storage });
 
 // @desc        Retrieve all Products
 // @route       Get api/v1/products
@@ -26,38 +51,37 @@ router.get("/", async (req, res) => {
   }
 });
 
-// @desc        Create a New Product
-// @route       Post api/v1/products
-router.post("/", async (req, res) => {
+// @desc        Get Count of Products in DB
+// @route       Get api/v1/products/get/count
+router.get("/get/count", async (req, res) => {
   try {
-    const category = await Category.findById(req.body.category);
-    if (!category)
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Category",
-      });
+    const productCount = await Product.countDocuments((count) => count);
 
-    const newProduct = await Product.create({
-      name: req.body.name,
-      description: req.body.description,
-      richDescription: req.body.richDescription,
-      image: req.body.image,
-      brand: req.body.brand,
-      price: req.body.price,
-      category: req.body.category,
-      countInStock: req.body.countInStock,
-      rating: req.body.rating,
-      numReviews: req.body.numReviews,
-      isFeatured: req.body.isFeatured,
+    if (!productCount) return res.status(400).json({ success: false });
+
+    res.status(200).send({
+      productCount: productCount,
     });
+  } catch (err) {
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+  }
+});
 
-    if (!newProduct)
-      return res.status(404).json({
-        success: false,
-        message: "Product Could not be created",
-      });
+// @desc        Get Featured Products
+// @route       Get api/v1/products/get/featured
+router.get("/get/featured/:count", async (req, res) => {
+  try {
+    const count = req.params.count ? req.params.count : 0;
+    const products = await Product.find({ isFeatured: true }).limit(+count);
 
-    return res.status(200).json(newProduct);
+    if (!products) return res.status(400).json({ success: false });
+
+    res.status(200).send({
+      productCount: products,
+    });
   } catch (err) {
     res.status(500).json({
       error: err,
@@ -93,6 +117,54 @@ router.get("/:id", async (req, res) => {
     });
   }
 });
+
+
+// @desc        Create a New Product
+// @route       Post api/v1/products
+router.post("/", uploadOptions.single("image"), async (req, res) => {
+  try {
+    const category = await Category.findById(req.body.category);
+    if (!category)
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Category",
+      });
+
+    const file = req.file;
+    if(!file) return res.status(400).send('The Image field is required...')
+
+    const fileName = req.file.filename;
+    const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+
+    const newProduct = await Product.create({
+      name: req.body.name,
+      description: req.body.description,
+      richDescription: req.body.richDescription,
+      image: `${basePath}${fileName}`,
+      brand: req.body.brand,
+      price: req.body.price,
+      category: req.body.category,
+      countInStock: req.body.countInStock,
+      rating: req.body.rating,
+      numReviews: req.body.numReviews,
+      isFeatured: req.body.isFeatured,
+    });
+
+    if (!newProduct)
+      return res.status(404).json({
+        success: false,
+        message: "Product Could not be created",
+      });
+
+    return res.status(200).json(newProduct);
+  } catch (err) {
+    res.status(500).json({
+      error: err,
+      success: false,
+    });
+  }
+});
+
 
 // @desc        Update a Product
 // @route       Put api/v1/products/:id
@@ -154,6 +226,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+
+
 // @desc        Delete a Product
 // @route       Delete api/v1/products/:id
 router.delete("/:id", async (req, res) => {
@@ -195,43 +269,5 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// @desc        Get Count of Products in DB
-// @route       Get api/v1/products/get/count
-router.get("/get/count", async (req, res) => {
-  try {
-    const productCount = await Product.countDocuments((count) => count);
-
-    if (!productCount) return res.status(400).json({ success: false });
-
-    res.status(200).send({
-      productCount: productCount,
-    });
-  } catch (err) {
-    res.status(500).json({
-      error: err,
-      success: false,
-    });
-  }
-});
-
-// @desc        Get Featured Products
-// @route       Get api/v1/products/get/featured
-router.get("/get/featured/:count", async (req, res) => {
-  try {
-    const count = req.params.count ? req.params.count : 0;
-    const products = await Product.find({ isFeatured: true }).limit(+count);
-
-    if (!products) return res.status(400).json({ success: false });
-
-    res.status(200).send({
-      productCount: products,
-    });
-  } catch (err) {
-    res.status(500).json({
-      error: err,
-      success: false,
-    });
-  }
-});
 
 module.exports = router;
