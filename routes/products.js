@@ -118,7 +118,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-
 // @desc        Create a New Product
 // @route       Post api/v1/products
 router.post("/", uploadOptions.single("image"), async (req, res) => {
@@ -131,7 +130,7 @@ router.post("/", uploadOptions.single("image"), async (req, res) => {
       });
 
     const file = req.file;
-    if(!file) return res.status(400).send('The Image field is required...')
+    if (!file) return res.status(400).send("The Image field is required...");
 
     const fileName = req.file.filename;
     const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
@@ -165,10 +164,9 @@ router.post("/", uploadOptions.single("image"), async (req, res) => {
   }
 });
 
-
 // @desc        Update a Product
 // @route       Put api/v1/products/:id
-router.put("/:id", async (req, res) => {
+router.put("/:id", uploadOptions.single("image"), async (req, res) => {
   try {
     /// Checks if id is a valid Object ID
     if (!mongoose.isValidObjectId(req.params.id))
@@ -192,13 +190,20 @@ router.put("/:id", async (req, res) => {
         message: "Invalid Category",
       });
 
+      const file = req.file;
+      if (!file) return res.status(400).send("The Image field is required...");
+  
+      const fileName = req.file.filename;
+      const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+  
+
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       {
         name: req.body.name,
         description: req.body.description,
         richDescription: req.body.richDescription,
-        image: req.body.image,
+        image: `${basePath}${fileName}`,
         brand: req.body.brand,
         price: req.body.price,
         category: req.body.category,
@@ -226,7 +231,55 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// @desc        Update a Product
+// @route       Put api/v1/products/:id
+router.put(
+  "/gallery-images/:id",
+  uploadOptions.array("images", 10),
+  async (req, res) => {
+    try {
+      /// Checks if id is a valid Object ID
+      if (!mongoose.isValidObjectId(req.params.id))
+        return res.status(400).json({
+          success: false,
+          message: "Invalid Product ID",
+        });
 
+      const files = req.files;
+      if (!files) return res.status(400).send("The Images field is required...");
+
+      let imagesPaths = [];
+      const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+      if (files) {
+        files.map((file) => {
+          imagesPaths.push(`${basePath}${file.filename}`);
+        });
+      }
+
+      const updatedProduct = await Product.findByIdAndUpdate(
+        req.params.id,
+        {
+          images: imagesPaths,
+        },
+        {
+          new: true,
+        }
+      );
+
+      if (!updatedProduct) {
+        res
+          .status(404)
+          .json({ success: false, message: "Product Could not be Updated!!!" });
+      }
+      res.status(200).send(updatedProduct);
+    } catch (err) {
+      res.status(500).json({
+        error: err,
+        success: false,
+      });
+    }
+  }
+);
 
 // @desc        Delete a Product
 // @route       Delete api/v1/products/:id
@@ -268,6 +321,5 @@ router.delete("/:id", async (req, res) => {
     next(err);
   }
 });
-
 
 module.exports = router;
