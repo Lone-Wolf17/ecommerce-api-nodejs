@@ -1,7 +1,9 @@
-const expressJwt = require("express-jwt");
-const secrett = process.env.JWT_SECRET;
+// const expressJwt = require("express-jwt");
+import expressJwt from 'express-jwt';
+import { CustomRequestObject } from '../models/custom-request-object';
 
-const apiBaseUrl = process.env.API_BASE_URL;
+const secrett = process.env.JWT_SECRET!;
+const apiBaseUrl = process.env.API_BASE_URL!;
 
 const authJwt = expressJwt({
   secret: secrett,
@@ -17,12 +19,11 @@ const authJwt = expressJwt({
   ],
 });
 
-async function isRevoked(req, payload, done) {
+async function isRevoked(req : CustomRequestObject, payload: any, done: any) {
   if (!payload.isAdmin) {
     done(null, true);
   }
-
   done();
 }
 
-module.exports = authJwt;
+export default authJwt;

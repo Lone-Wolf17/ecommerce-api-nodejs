@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     CategoryModelName: "Category",
     OrderModelName: "Order",
     OrderItemModelName: "OrderItem",

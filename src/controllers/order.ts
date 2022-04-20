@@ -1,14 +1,13 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const Order = require("../models/Order.js");
-const OrderItem = require("../models/OrderItem.js");
-const Product = require("../models/Product.js");
-const router = express.Router();
+import { Response } from "express";
+import { isValidObjectId } from "mongoose";
 
-// @desc        Retrieve all Orders
-// @route       GET api/v1/orders
-router.get("/", async (req, res) => {
-  const orderList = await Order.find()
+import { CustomRequestObject } from "../models/custom-request-object";
+import { OrderModel } from "../models/Order";
+import { OrderItem, OrderItemModel } from "../models/OrderItem";
+import { ProductModel } from "../models/Product";
+
+export const getOrders = async (req: CustomRequestObject, res: Response) => {
+  const orderList = await OrderModel.find()
     .populate("user", "name")
     .sort({ dateOrdered: -1 });
 
@@ -16,16 +15,28 @@ router.get("/", async (req, res) => {
     res.status(500).json({ success: false });
   }
   res.send(orderList);
-});
+};
 
-// @desc        Create a new Order
-// @route       Post api/v1/order
-router.post("/", async (req, res) => {
+export const getOrderById = async (req: CustomRequestObject, res: Response) => {
+  const order = await OrderModel.findById(req.params.id)
+    .populate("user", "name")
+    .populate({
+      path: "orderItems",
+      populate: { path: "product", populate: "category" },
+    });
+
+  if (!order) {
+    return res.status(500).json({ success: false, message: "Order not Found" });
+  }
+  res.send(order);
+};
+
+export const createOrder = async (req: CustomRequestObject, res: Response) => {
   let totalPrice = 0;
 
   const orderItemsIds = await Promise.all(
-    req.body.orderItems.map(async (orderItem) => {
-      const product = await Product.findById(orderItem.product)
+    req.body.orderItems.map(async (orderItem: OrderItem) => {
+      const product = await ProductModel.findById(orderItem.product)
         .select("price")
         .lean();
 
@@ -36,7 +47,7 @@ router.post("/", async (req, res) => {
         });
       }
 
-      let newOrderItem = new OrderItem({
+      let newOrderItem = new OrderItemModel({
         quantity: orderItem.quantity,
         product: orderItem.product,
       });
@@ -51,7 +62,7 @@ router.post("/", async (req, res) => {
 
   console.log(`Total Price:: ${totalPrice}`);
 
-  let order = new Order({
+  let order = new OrderModel({
     orderItems: orderItemsIds,
     shippingAddress1: req.body.shippingAddress1,
     shippingAddress2: req.body.shippingAddress2,
@@ -73,30 +84,12 @@ router.post("/", async (req, res) => {
     });
 
   res.status(200).send(order);
-});
+};
 
-// @desc        Get Order By ID
-// @route       GET api/v1/orders/:id
-router.get("/:id", async (req, res) => {
-  const order = await Order.findById(req.params.id)
-    .populate("user", "name")
-    .populate({
-      path: "orderItems",
-      populate: { path: "product", populate: "category" },
-    });
-
-  if (!order) {
-    return res.status(500).json({ success: false, message: "Order not Found" });
-  }
-  res.send(order);
-});
-
-// @desc        Update Order with ID
-// @route       Put api/v1/orders/:id
-router.put("/:id", async (req, res) => {
+export const updateOrder = async (req: CustomRequestObject, res: Response) => {
   try {
     /// Checks if id is a valid Object ID
-    if (!mongoose.isValidObjectId(req.params.id))
+    if (!isValidObjectId(req.params.id))
       return res.status(400).json({
         success: false,
         message: "Invalid Category ID",
@@ -109,7 +102,7 @@ router.put("/:id", async (req, res) => {
         message: "Please Pass the Updated Status",
       });
 
-    const order = await Order.findByIdAndUpdate(
+    const order = await OrderModel.findByIdAndUpdate(
       req.params.id,
       {
         status: req.body.status,
@@ -131,23 +124,21 @@ router.put("/:id", async (req, res) => {
       success: false,
     });
   }
-});
+};
 
-// @desc        Delete an Order
-// @route       Delete api/v1/orders/:id
-router.delete("/:id", async (req, res) => {
+export const deleteOrder = async (req: CustomRequestObject, res: Response) => {
   /// Checks if id is a valid Object ID
-  if (!mongoose.isValidObjectId(req.params.id))
+  if (!isValidObjectId(req.params.id))
     return res.status(400).json({
       success: false,
       message: "Invalid Category ID",
     });
 
-  const deletedOrder = await Order.findByIdAndRemove(req.params.id);
+  const deletedOrder = await OrderModel.findByIdAndRemove(req.params.id);
 
   if (deletedOrder) {
     await deletedOrder.orderItems.map(async (orderItem) => {
-      await OrderItem.findByIdAndRemove(orderItem);
+      await OrderItemModel.findByIdAndRemove(orderItem);
     });
 
     return res
@@ -159,12 +150,13 @@ router.delete("/:id", async (req, res) => {
       success: false,
     });
   }
-});
+};
 
-// @desc        Get Total Sales for EShop
-// @route       GET api/v1/orders/get/totalsales
-router.get("/get/totalsales", async (req, res) => {
-  const totalSales = await Order.aggregate([
+export const getTotalSales = async (
+  req: CustomRequestObject,
+  res: Response
+) => {
+  const totalSales = await OrderModel.aggregate([
     { $group: { _id: null, totalsales: { $sum: "$totalPrice" } } },
   ]);
 
@@ -174,12 +166,13 @@ router.get("/get/totalsales", async (req, res) => {
       .json({ success: false, message: "The Total Sales cannit be generated" });
   }
   res.send({ totalsales: totalSales.pop().totalsales });
-});
+};
 
-// @desc        Retrieve the number of Orders in DB
-// @route       GET api/v1/orders/get/count
-router.get("/get/count", async (req, res) => {
-  const orderCount = await Order.countDocuments((count) => count);
+export const getOrdersCount = async (
+  req: CustomRequestObject,
+  res: Response
+) => {
+  const orderCount = await OrderModel.countDocuments((count) => count);
 
   if (!orderCount) {
     res
@@ -187,12 +180,13 @@ router.get("/get/count", async (req, res) => {
       .json({ success: false, message: "The Order Count cannot be generated" });
   }
   res.send({ orderCount: orderCount });
-});
+};
 
-// @desc        Retrieve orders of a particular user
-// @route       GET api/v1/orders/get/userorders/:userid
-router.get("/get/userorders/:userId", async (req, res) => {
-  const userOrderList = await Order.find({ user: req.params.userId })
+export const getUserOrders = async (
+  req: CustomRequestObject,
+  res: Response
+) => {
+  const userOrderList = await OrderModel.find({ user: req.params.userId })
     .populate({
       path: "orderItems",
       populate: {
@@ -208,6 +202,4 @@ router.get("/get/userorders/:userId", async (req, res) => {
       .json({ success: false, message: "The Order Count cannot be generated" });
   }
   res.send(userOrderList);
-});
-
-module.exports = router;
+};
