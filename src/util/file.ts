@@ -13,7 +13,7 @@ const FILE_TYPE_MAP: Map<string, string> = new Map([
   
       if (isValid) uploadError = null;
   
-      cb(uploadError, "public/uploads");
+      cb(uploadError, "images");
     },
     filename: function (req, file, cb) {
       const filename = file.originalname.replace(" ", "-");

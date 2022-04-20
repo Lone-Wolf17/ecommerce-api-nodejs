@@ -9,17 +9,18 @@ const router = Router();
 // @route       GET api/v1/orders
 router.get("/", OrdersController.getOrders);
 
-// @desc        Create a new Order
-// @route       Post api/v1/order
-router.post("/", OrdersController.createOrder);
-
 // @desc        Get Order By ID
 // @route       GET api/v1/orders/:id
 router.get("/:id", OrdersController.getOrderById);
 
-// @desc        Update Order with ID
+// @desc        Create a new Order
+// @route       Post api/v1/order
+router.post("/", OrdersController.createOrder);
+
+
+// @desc        Update Order Status
 // @route       Put api/v1/orders/:id
-router.put("/:id", OrdersController.updateOrder);
+router.put("/:id", OrdersController.updateOrderStatus);
 
 // @desc        Delete an Order
 // @route       Delete api/v1/orders/:id

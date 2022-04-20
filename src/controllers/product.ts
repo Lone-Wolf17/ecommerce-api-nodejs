@@ -37,7 +37,7 @@ export const getProductsCount = async (
   res: Response
 ) => {
     try {
-        const productCount = await ProductModel.countDocuments((count) => count);
+        const productCount = await ProductModel.countDocuments();
     
         if (!productCount) return res.status(400).json({ success: false });
     
@@ -118,13 +118,13 @@ export const createProduct = async (
         if (!file) return res.status(400).send("The Image field is required...");
     
         const fileName = file.filename;
-        const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+        const basePath = `images/`;
     
         const newProduct = await ProductModel.create({
           name: req.body.name,
           description: req.body.description,
           richDescription: req.body.richDescription,
-          image: `${basePath}${fileName}`,
+          imageUrl: `${basePath}${fileName}`,
           brand: req.body.brand,
           price: req.body.price,
           category: req.body.category,
@@ -180,7 +180,7 @@ export const updateProduct = async (
           if (!file) return res.status(400).send("The Image field is required...");
       
           const fileName = file.filename;
-          const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+          const basePath = `images/`;
       
     
         const updatedProduct = await ProductModel.findByIdAndUpdate(
@@ -189,7 +189,7 @@ export const updateProduct = async (
             name: req.body.name,
             description: req.body.description,
             richDescription: req.body.richDescription,
-            image: `${basePath}${fileName}`,
+            imageUrl: `${basePath}${fileName}`,
             brand: req.body.brand,
             price: req.body.price,
             category: req.body.category,
@@ -233,7 +233,7 @@ export const updateProductImages = async (
         if (!files) return res.status(400).send("The Images field is required...");
   
         let imagesPaths : string[]= [];
-        const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+        const basePath = `images/`;
         if (files) {
           files.forEach((file) => {
             imagesPaths.push(`${basePath}${file.filename}`);

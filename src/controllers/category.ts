@@ -51,13 +51,11 @@ export const getCategoryById = async (req: CustomRequestObject, res: Response) =
 
 export const createCategory = async (req: CustomRequestObject, res: Response) => {
     try {
-        let category = new CategoryModel({
+        let category = await CategoryModel.create({
           name: req.body.name,
           icon: req.body.icon,
           color: req.body.color,
         });
-    
-        category = await category.save();
     
         if (!category)
           return res.status(404).json({
@@ -142,7 +140,7 @@ export const updateCategory = async (req: CustomRequestObject, res: Response) =>
 
 export const getCategoriesCount = async (req: CustomRequestObject, res: Response)=>  {
     try {
-        const categoryCount = await CategoryModel.countDocuments((count) => count);
+        const categoryCount = await CategoryModel.countDocuments();
     
         if (!categoryCount) return res.status(400).json({ success: false });
     

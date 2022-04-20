@@ -30,7 +30,7 @@ router.post("/", uploadOptions.single("image"), ProductController.createProduct)
 router.put("/:id", uploadOptions.single("image"), ProductController.updateProduct);
 
 // @desc        Update a Product
-// @route       Put api/v1/products/:id
+// @route       Put api/v1/products/gallery-images/:id
 router.put(
   "/gallery-images/:id",
   uploadOptions.array("images", 10),

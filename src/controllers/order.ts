@@ -47,14 +47,14 @@ export const createOrder = async (req: CustomRequestObject, res: Response) => {
         });
       }
 
-      let newOrderItem = new OrderItemModel({
+      let newOrderItem = await OrderItemModel.create({
         quantity: orderItem.quantity,
         product: orderItem.product,
       });
 
       totalPrice += orderItem.quantity * +product.price;
 
-      newOrderItem = await newOrderItem.save();
+      // newOrderItem = await newOrderItem.save();
 
       return newOrderItem._id;
     })
@@ -86,13 +86,13 @@ export const createOrder = async (req: CustomRequestObject, res: Response) => {
   res.status(200).send(order);
 };
 
-export const updateOrder = async (req: CustomRequestObject, res: Response) => {
+export const updateOrderStatus = async (req: CustomRequestObject, res: Response) => {
   try {
     /// Checks if id is a valid Object ID
     if (!isValidObjectId(req.params.id))
       return res.status(400).json({
         success: false,
-        message: "Invalid Category ID",
+        message: "Invalid Order ID",
       });
 
     /// Checks if id is a valid Object ID
@@ -172,7 +172,7 @@ export const getOrdersCount = async (
   req: CustomRequestObject,
   res: Response
 ) => {
-  const orderCount = await OrderModel.countDocuments((count) => count);
+  const orderCount = await OrderModel.countDocuments();
 
   if (!orderCount) {
     res

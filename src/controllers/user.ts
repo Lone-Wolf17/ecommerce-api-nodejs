@@ -75,7 +75,18 @@ export const createUser = async (req: CustomRequestObject, res: Response) => {
             success: false,
           });
     
-        res.status(200).send(user);
+        res.status(200).send({
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          isAdmin: user.isAdmin,
+          id : user.id,
+          street: user.street,
+          apartment: user.apartment,
+          city: user.city,
+          zip: user.zip,
+          country: user.country
+        });
       } catch (err) {
         res.status(500).json({
           error: err,
@@ -142,7 +153,18 @@ export const signUp = async (req: CustomRequestObject, res: Response) => {
             success: false,
           });
     
-        res.status(200).send(user);
+          res.status(200).send({
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            isAdmin: user.isAdmin,
+            id : user.id,
+            street: user.street,
+            apartment: user.apartment,
+            city: user.city,
+            zip: user.zip,
+            country: user.country
+          });
       } catch (err) {
         res.status(500).json({
           error: err,
@@ -153,7 +175,7 @@ export const signUp = async (req: CustomRequestObject, res: Response) => {
 
 export const getUserCount = async (req: CustomRequestObject, res: Response) => {
     try {
-        const userCount = await UserModel.countDocuments((count) => count);
+        const userCount = await UserModel.countDocuments();
     
         if (!userCount) return res.status(400).json({ success: false });
     
@@ -161,6 +183,7 @@ export const getUserCount = async (req: CustomRequestObject, res: Response) => {
           userCount: userCount,
         });
       } catch (err) {
+        console.log(err);
         res.status(500).json({
           error: err,
           success: false,

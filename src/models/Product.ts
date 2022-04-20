@@ -14,8 +14,8 @@ export class Product {
   @Property({default: ""})
   public richDescription!: string;
 
-  @Property({default: ""})
-  public image!: string;
+  @Property({required: true})
+  public imageUrl!: string;
 
   @Property({type: ()=> [String]})
   public images!: string[];
@@ -23,7 +23,7 @@ export class Product {
   @Property({default: ""})
   public brand!: string;
 
-  @Property({default: 0})
+  @Property({required: true})
   public price!: number;
 
   @Property({ref: ()=> Category, required: true})
@@ -38,10 +38,10 @@ export class Product {
   @Property({ min: 0})
   public numReviews!: number;
 
-  @Property()
+  @Property({default: false})
   public isFeatured!: boolean;
 
-  @Property({ type: ()=> Date, default: () => Date.now, required: true})
+  @Property({ type: ()=> Date, default: () => new Date(), required: true})
   public dateCreated!: Date;
 }
 

@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -30,8 +31,7 @@ app.use(express.urlencoded({ extended: false })); // body parser
 app.use(express.json()); // body parser
 app.use(morgan("tiny"));
 app.use(authJwt);
-app.use(errorHandler);
-app.use("/public/uploads", express.static(__dirname + "/public/uploads")); // static folder
+app.use(`${api}/images`,  express.static(path.join(__dirname, "..", "images"))); // static folder
 
 // Connect to Mongo DB
 connectDB();
@@ -41,6 +41,8 @@ app.use(`${api}/products`, productsRouter);
 app.use(`${api}/categories`, categoriesRouter);
 app.use(`${api}/orders`, ordersRouter);
 app.use(`${api}/users`, usersRouter);
+
+app.use(errorHandler);
 
 app.listen(3000, () => {
   console.log(`Server is running on port ${3000}`);
